@@ -1,29 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface Props {
-  addTodo: (text: string) => void;
+  newTodo: string;
+  setNewTodo: (value: string) => void;
+  addTodo: () => void;
 }
 
-const AddTodo: React.FC<Props> = ({ addTodo }) => {
-  const [text, setText] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!text.trim()) return;
-    addTodo(text);
-    setText('');
-  };
-
+const AddTodo: React.FC<Props> = ({ newTodo, setNewTodo, addTodo }) => {
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <input
         type="text"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
+        value={newTodo}
+        onChange={(e) => setNewTodo(e.target.value)}
         placeholder="Add a new todo"
       />
-      <button type="submit">Add</button>
-    </form>
+      <button onClick={addTodo}>Add Todo</button>
+    </div>
   );
 };
 

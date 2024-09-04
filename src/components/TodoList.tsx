@@ -1,26 +1,26 @@
 import React from 'react';
-import { Todo } from '../App';
+import { Todo } from '../types';
 
 interface Props {
   todos: Todo[];
-  toggleTodo: (id: number) => void;
-  deleteTodo: (id: number) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
 }
 
 const TodoList: React.FC<Props> = ({ todos, toggleTodo, deleteTodo }) => {
   return (
     <ul>
       {todos.map((todo) => (
-        <li key={todo.id}>
+        <li key={todo._id}>
           <input
             type="checkbox"
             checked={todo.completed}
-            onChange={() => toggleTodo(todo.id)}
+            onChange={() => toggleTodo(todo._id)}
           />
           <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
             {todo.text}
           </span>
-          <button onClick={() => deleteTodo(todo.id)}>Delete</button>
+          <button onClick={() => deleteTodo(todo._id)}>Delete</button>
         </li>
       ))}
     </ul>

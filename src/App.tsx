@@ -1,43 +1,120 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { auth } from './firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User } from 'firebase/auth';
+import axios from 'axios';
+import './App.css';
+import { Todo } from './types';
 import TodoList from './components/TodoList';
 import AddTodo from './components/AddTodo';
-import './App.css';
-
-export interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-}
 
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [newTodo, setNewTodo] = useState('');
+  const [user, setUser] = useState<User | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const addTodo = (text: string) => {
-    const newTodo: Todo = {
-      id: Date.now(),
-      text,
-      completed: false,
-    };
-    setTodos([...todos, newTodo]);
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      if (user) {
+        fetchTodos(user.uid);
+      } else {
+        setTodos([]);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const fetchTodos = async (userId: string) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/todos/${userId}`);
+      setTodos(response.data);
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+    }
   };
 
-  const toggleTodo = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
+  const addTodo = async () => {
+    if (!user || !newTodo.trim()) return;
+    try {
+      const response = await axios.post('http://localhost:5000/api/todos', {
+        text: newTodo,
+        completed: false,
+        userId: user.uid,
+      });
+      setTodos([...todos, response.data]);
+      setNewTodo('');
+    } catch (error) {
+      console.error('Error adding todo:', error);
+    }
+  };
+
+  const toggleTodo = async (_id: string) => {
+    const updatedTodos = todos.map((todo) =>
+      todo._id === _id ? { ...todo, completed: !todo.completed } : todo
     );
+    setTodos(updatedTodos);
+    // Implement API call to update todo on the server
   };
 
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const deleteTodo = async (_id: string) => {
+    setTodos(todos.filter((todo) => todo._id !== _id));
+    // Implement API call to delete todo on the server
+  };
+
+  const handleSignUp = async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error('Error signing up:', error);
+    }
+  };
+
+  const handleSignIn = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error('Error signing in:', error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
     <div className="App">
-      <h1>Simple Todo App</h1>
-      <AddTodo addTodo={addTodo} />
-      <TodoList todos={todos} toggleTodo={toggleTodo} deleteTodo={deleteTodo} />
+      <h1>Todo App</h1>
+      {user ? (
+        <>
+          <p>Welcome, {user.email}</p>
+          <button onClick={handleSignOut}>Sign Out</button>
+          <AddTodo newTodo={newTodo} setNewTodo={setNewTodo} addTodo={addTodo} />
+          <TodoList todos={todos} toggleTodo={toggleTodo} deleteTodo={deleteTodo} />
+        </>
+      ) : (
+        <div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+          />
+          <button onClick={handleSignUp}>Sign Up</button>
+          <button onClick={handleSignIn}>Sign In</button>
+        </div>
+      )}
     </div>
   );
 }
