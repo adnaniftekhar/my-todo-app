@@ -28,7 +28,7 @@ function App() {
 
   const fetchTodos = async (userId: string) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/todos/${userId}`);
+      const response = await axios.get(`https://my-todo-app-01.herokuapp.com/api/todos/${userId}`);
       setTodos(response.data);
     } catch (error) {
       console.error('Error fetching todos:', error);
@@ -38,7 +38,7 @@ function App() {
   const addTodo = async () => {
     if (!user || !newTodo.trim()) return;
     try {
-      const response = await axios.post('http://localhost:5000/api/todos', {
+      const response = await axios.post('https://my-todo-app-01.herokuapp.com/api/todos', {
         text: newTodo,
         completed: false,
         userId: user.uid,

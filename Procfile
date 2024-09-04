@@ -1,0 +1,1 @@
+     web: cd todo-app-backend && npm start
