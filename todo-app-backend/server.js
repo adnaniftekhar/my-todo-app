@@ -62,5 +62,4 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`MongoDB URI: ${process.env.MONGODB_URI}`); // Log the MongoDB URI (make sure to remove this in production)
 });
