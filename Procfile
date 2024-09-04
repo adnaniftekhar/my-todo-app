@@ -1,1 +1,1 @@
-   web: node todo-app-backend/server.js
+   web: npm start

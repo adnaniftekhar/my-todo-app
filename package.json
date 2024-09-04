@@ -4,7 +4,7 @@
   "private": true,
   "homepage": "https://adnaniftekhar.github.io/my-todo-app",
   "engines": {
-    "node": "18.x"
+    "node": "18.17.1"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
