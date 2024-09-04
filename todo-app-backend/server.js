@@ -29,7 +29,7 @@ app.get('/api/todos/:userId', async (req, res) => {
     const todos = await Todo.find({ userId: req.params.userId });
     res.json(todos);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching todos', error });
+    res.status(500).json({ message: 'Error fetching todos', error: error.toString() });
   }
 });
 
@@ -39,7 +39,17 @@ app.post('/api/todos', async (req, res) => {
     await todo.save();
     res.status(201).json(todo);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating todo', error });
+    res.status(500).json({ message: 'Error creating todo', error: error.toString() });
+  }
+});
+
+// Add a new route to get all todos (for testing purposes)
+app.get('/api/todos', async (req, res) => {
+  try {
+    const todos = await Todo.find();
+    res.json(todos);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching all todos', error: error.toString() });
   }
 });
 
@@ -50,4 +60,7 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`MongoDB URI: ${process.env.MONGODB_URI}`); // Log the MongoDB URI (make sure to remove this in production)
+});
