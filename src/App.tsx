@@ -64,16 +64,20 @@ function App() {
   };
 
   const handleSignUp = async () => {
+    console.log("Sign up button clicked");
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log("Sign up successful", userCredential.user);
     } catch (error) {
       console.error('Error signing up:', error);
     }
   };
 
   const handleSignIn = async () => {
+    console.log("Sign in button clicked");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Sign in successful", userCredential.user);
     } catch (error) {
       console.error('Error signing in:', error);
     }
@@ -82,6 +86,7 @@ function App() {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      console.log("Sign out successful");
     } catch (error) {
       console.error('Error signing out:', error);
     }
