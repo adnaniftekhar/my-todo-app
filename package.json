@@ -4,8 +4,8 @@
   "private": true,
   "homepage": "https://adnaniftekhar.github.io/my-todo-app",
   "engines": {
-     "node": "18.17.1",
-     "npm": "9.6.7"
+    "node": "18.17.1",
+    "npm": "9.6.7"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -16,22 +16,21 @@
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
     "axios": "^1.7.7",
+    "express": "^4.17.1",
     "firebase": "^10.13.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4",
-    "express": "^4.17.1"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "node todo-app-backend/server.js",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "heroku-postbuild": "npm install && npm run build && cd todo-app-backend && npm install"
+    "server": "node todo-app-backend/server.js",
+    "dev": "concurrently \"npm run start\" \"npm run server\""
   },
   "eslintConfig": {
     "extends": [
@@ -52,6 +51,7 @@
     ]
   },
   "devDependencies": {
+    "concurrently": "^6.5.1",
     "gh-pages": "^5.0.0"
   }
 }

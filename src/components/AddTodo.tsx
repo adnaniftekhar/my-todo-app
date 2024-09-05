@@ -1,51 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-interface Props {
+interface AddTodoProps {
   newTodo: string;
-  setNewTodo: (value: string) => void;
-  addTodo: () => Promise<void>;
+  setNewTodo: React.Dispatch<React.SetStateAction<string>>;
+  addTodo: (text: string) => Promise<void>;  // Update this line
 }
 
-const AddTodo: React.FC<Props> = ({ newTodo, setNewTodo, addTodo }) => {
-  const [isAdding, setIsAdding] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleAddTodo = async () => {
-    if (!newTodo.trim()) {
-      setError("Todo cannot be empty");
-      return;
-    }
-
-    setIsAdding(true);
-    setError(null);
-
-    try {
-      await addTodo();
-    } catch (err) {
-      setError("Failed to add todo. Please try again.");
-      console.error('Error in AddTodo component:', err);
-    } finally {
-      setIsAdding(false);
+const AddTodo: React.FC<AddTodoProps> = ({ newTodo, setNewTodo, addTodo }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newTodo.trim()) {
+      addTodo(newTodo);
+      setNewTodo('');
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <input
         type="text"
         value={newTodo}
-        onChange={(e) => {
-          setNewTodo(e.target.value);
-          setError(null);
-        }}
+        onChange={(e) => setNewTodo(e.target.value)}
         placeholder="Add a new todo"
-        disabled={isAdding}
       />
-      <button onClick={handleAddTodo} disabled={isAdding}>
-        {isAdding ? 'Adding...' : 'Add Todo'}
-      </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </div>
+      <button type="submit">Add Todo</button>
+    </form>
   );
 };
 

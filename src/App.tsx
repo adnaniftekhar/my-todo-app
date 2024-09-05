@@ -7,12 +7,16 @@ import { Todo } from './types';
 import TodoList from './components/TodoList';
 import AddTodo from './components/AddTodo';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -28,39 +32,61 @@ function App() {
 
   const fetchTodos = async (userId: string) => {
     try {
-      const response = await axios.get(`https://my-todo-app-01.herokuapp.com/api/todos/${userId}`);
+      console.log('Fetching todos for user:', userId);
+      const response = await axios.get(`${API_URL}/api/todos/${userId}`);
+      console.log('Fetched todos:', response.data);
       setTodos(response.data);
     } catch (error) {
       console.error('Error fetching todos:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Server error:', error.response.data);
+      }
+      setError('An error occurred while fetching todos.');
     }
   };
 
-  const addTodo = async () => {
-    if (!user || !newTodo.trim()) return;
+  const addTodo = async (text: string) => {
     try {
-      const response = await axios.post('https://my-todo-app-01.herokuapp.com/api/todos', {
-        text: newTodo,
-        completed: false,
-        userId: user.uid,
-      });
+      console.log('Adding todo:', text);
+      const response = await axios.post(`${API_URL}/api/todos`, { text, userId: user?.uid });
+      console.log('Added todo:', response.data);
       setTodos([...todos, response.data]);
-      setNewTodo('');
     } catch (error) {
       console.error('Error adding todo:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Server error:', error.response.data);
+      }
+      setError('An error occurred while adding the todo.');
     }
   };
 
   const toggleTodo = async (_id: string) => {
-    const updatedTodos = todos.map((todo) =>
-      todo._id === _id ? { ...todo, completed: !todo.completed } : todo
-    );
-    setTodos(updatedTodos);
-    // Implement API call to update todo on the server
+    try {
+      const todoToUpdate = todos.find(todo => todo._id === _id);
+      if (!todoToUpdate) return;
+
+      const response = await axios.put(`${API_URL}/api/todos/${_id}`, {
+        ...todoToUpdate,
+        completed: !todoToUpdate.completed
+      });
+
+      setTodos(todos.map(todo =>
+        todo._id === _id ? response.data : todo
+      ));
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      setError('An error occurred. Please try again.');
+    }
   };
 
   const deleteTodo = async (_id: string) => {
-    setTodos(todos.filter((todo) => todo._id !== _id));
-    // Implement API call to delete todo on the server
+    try {
+      await axios.delete(`${API_URL}/api/todos/${_id}`);
+      setTodos(todos.filter(todo => todo._id !== _id));
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      setError('An error occurred while deleting the todo.');
+    }
   };
 
   const handleSignUp = async () => {
@@ -70,16 +96,21 @@ function App() {
       console.log("Sign up successful", userCredential.user);
     } catch (error) {
       console.error('Error signing up:', error);
+      setError('An error occurred. Please try again.');
     }
   };
 
   const handleSignIn = async () => {
     console.log("Sign in button clicked");
+    setIsLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("Sign in successful", userCredential.user);
     } catch (error) {
       console.error('Error signing in:', error);
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,12 +120,19 @@ function App() {
       console.log("Sign out successful");
     } catch (error) {
       console.error('Error signing out:', error);
+      setError('An error occurred. Please try again.');
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSignIn();
   };
 
   return (
     <div className="App">
       <h1>Todo App</h1>
+      {error && <p className="error">{error}</p>}
       {user ? (
         <>
           <p>Welcome, {user.email}</p>
@@ -103,7 +141,7 @@ function App() {
           <TodoList todos={todos} toggleTodo={toggleTodo} deleteTodo={deleteTodo} />
         </>
       ) : (
-        <div>
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             value={email}
@@ -116,9 +154,8 @@ function App() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
           />
-          <button onClick={handleSignUp}>Sign Up</button>
-          <button onClick={handleSignIn}>Sign In</button>
-        </div>
+          <button type="submit">Sign In</button>
+        </form>
       )}
     </div>
   );
